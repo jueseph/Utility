@@ -1,4 +1,4 @@
-function ha = tight_subplot(Nh, Nw, gap, marg_h, marg_w)
+function ha = tight_subplot(Nh, Nw, gap, marg_h, marg_w, units)
 
 % tight_subplot creates "subplot" axes with adjustable gaps and margins
 %
@@ -24,6 +24,11 @@ function ha = tight_subplot(Nh, Nw, gap, marg_h, marg_w)
 % Pekka Kumpulainen 20.6.2010   @tut.fi
 % Tampere University of Technology / Automation Science and Engineering
 
+% Modified 20120821 JW: can optionally use non-normalized units
+
+if exist('units')~=1
+    units = 'normalized';
+end
 
 if nargin<3; gap = .02; end
 if nargin<4 || isempty(marg_h); marg_h = .05; end
@@ -39,10 +44,20 @@ if numel(marg_h)==1;
     marg_h = [marg_h marg_h];
 end
 
-axh = (1-sum(marg_h)-(Nh-1)*gap(1))/Nh; 
-axw = (1-sum(marg_w)-(Nw-1)*gap(2))/Nw;
+fheight = 1;
+fwidth = 1;
 
-py = 1-marg_h(2)-axh; 
+if strcmpi(units,'pixels')
+%     set(gcf,'units','pixels');
+    pos = get(gcf,'position');
+    fwidth= pos(3);
+    fheight = pos(4);
+end
+
+axh = (fheight-sum(marg_h)-(Nh-1)*gap(1))/Nh; 
+axw = (fwidth-sum(marg_w)-(Nw-1)*gap(2))/Nw;
+
+py = fheight-marg_h(2)-axh; 
 
 ha = zeros(Nh*Nw,1);
 ii = 0;
@@ -51,7 +66,7 @@ for ih = 1:Nh
     
     for ix = 1:Nw
         ii = ii+1;
-        ha(ii) = axes('Units','normalized', ...
+        ha(ii) = axes('Units',units, ...
             'Position',[px py axw axh], ...
             'XTickLabel','', ...
             'YTickLabel','');
